@@ -26,10 +26,17 @@ def fetch_designs():
 
     inventory = sheet.worksheet("Sheet1").get_all_records()
 
-    matching_designs = [
-        row['Design'] for row in inventory
-        if row['Age'] == age and row['Gender'] == gender
-    ]
+    matching_designs = []
+
+    for row in inventory:
+        sheet_gender = row["Gender"].lower()
+        sheet_age = row["Age"]
+
+        if gender.lower() in sheet_gender:
+            if sheet_age == "2-4 years" and 2 <= int(age) <= 4:
+                matching_designs.append(row["Design"])
+            elif sheet_age == "4-6 years" and 4 <= int(age) <= 6:
+                matching_designs.append(row["Design"])
 
     return jsonify(matching_designs)
 
