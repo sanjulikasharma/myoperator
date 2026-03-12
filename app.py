@@ -43,18 +43,33 @@ def fetch_designs():
 
 @app.route('/place-order', methods=['POST'])
 def place_order():
-    data = request.json
-    order_sheet = sheet.worksheet("Orders")
+    try:
+        data = request.get_json() # Use get_json() to ensure it parses the body
+        if not data:
+            return "No data received", 400
+            
+        order_sheet = sheet.worksheet("Orders")
 
-    order_sheet.append_row([
-        data.get('name'),
-        data.get('phone'),
-        data.get('design'),
-        data.get('quantity'),
-        int(data.get('quantity')) * 500
-    ])
+        # Safely handle quantity and price
+        qty_str = data.get('quantity', '0')
+        # This prevents the 500 error if quantity is empty or not a number
+        qty = int(qty_str) if str(qty_str).isdigit() else 0
+        
+        price_per_unit = 500
+        total_price = qty * price_per_unit
 
-    return "Order Placed", 200
+        order_sheet.append_row([
+            data.get('name', 'N/A'),
+            data.get('phone', 'N/A'),
+            data.get('design', 'N/A'),
+            qty,
+            total_price
+        ])
+
+        return "Order Placed", 200
+    except Exception as e:
+        print(f"Error: {e}") # This will show up in your Render logs
+        return str(e), 500
 
 
 if __name__ == "__main__":
